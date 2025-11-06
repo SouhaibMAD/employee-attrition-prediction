@@ -1,4 +1,4 @@
-./commandsgit
+./commandsgit.txt
 
 # Virtual Environment
 venv/
@@ -35,7 +35,7 @@ data/*.txt
 *.sqlite
 *.sqlite3
 
-# Keep small sample data (uncomment if you have sample data)
+# Keep small sample data
 !data/sample_*.csv
 
 # Trained Models & Serialized Files
