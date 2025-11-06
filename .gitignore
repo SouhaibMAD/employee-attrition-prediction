@@ -1,3 +1,5 @@
+./commandsgit
+
 # Virtual Environment
 venv/
 env/
@@ -34,7 +36,7 @@ data/*.txt
 *.sqlite3
 
 # Keep small sample data (uncomment if you have sample data)
-# !data/sample_*.csv
+!data/sample_*.csv
 
 # Trained Models & Serialized Files
 models/*.pkl

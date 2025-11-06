@@ -1,0 +1,29 @@
+# Check what changed
+git status
+
+# Stage changes
+git add .
+
+# Commit with descriptive message
+git commit -m "Add feature engineering notebook"
+
+# Push to GitHub
+git push
+
+# Check status
+git status
+
+# View commit history
+git log --oneline
+
+# Undo unstaged changes
+git checkout -- filename
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Pull latest changes (when working from multiple machines)
+git pull
+
+# Clone your repo elsewhere
+git clone https://github.com/SouhaibMAD/employee-attrition-prediction.git
