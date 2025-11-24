@@ -187,7 +187,7 @@ streamlit run app.py
 ## 📝 Project Status
 
 - [x] Data exploration and preprocessing
-- [x] Baseline model implementation
+- [] Baseline model implementation
 - [ ] Advanced feature engineering
 - [ ] Hyperparameter tuning
 - [ ] Model explainability analysis
