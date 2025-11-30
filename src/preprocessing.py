@@ -177,7 +177,7 @@ def get_feature_names(preprocessor: ColumnTransformer) -> list:
 # --------------------------------------------------
 # MAIN PREPROCESSING FUNCTION
 # --------------------------------------------------
-def preprocess_data(data_path: str, save_dir: str = "../models") -> tuple:
+def preprocess_data(data_path: str, save_dir: str = "models") -> tuple:
     """
     Complete preprocessing pipeline with train/val/test split.
     
@@ -262,7 +262,7 @@ def preprocess_data(data_path: str, save_dir: str = "../models") -> tuple:
 # --------------------------------------------------
 if __name__ == "__main__":
     # Example usage
-    data_path = "../data/employee_attrition.csv"
+    data_path = "data\employee_attrition.csv"
     
     X_train, X_val, X_test, y_train, y_val, y_test, preprocessor, feature_names = preprocess_data(data_path)
     
