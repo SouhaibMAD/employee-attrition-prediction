@@ -1,0 +1,23 @@
+============================================================
+RÉSUMÉ DU PREPROCESSING
+============================================================
+
+Taille du dataset: 1470 lignes, 35 colonnes
+
+VALEURS MANQUANTES:
+  ✓ Aucune valeur manquante
+
+VALEURS ABERRANTES (TOP 5):
+  - TrainingTimesLastYear: 127 outliers (14.40%)
+  - MonthlyIncome: 67 outliers (7.60%)
+  - YearsSinceLastPromotion: 59 outliers (6.69%)
+  - TotalWorkingYears: 37 outliers (4.20%)
+  - NumCompaniesWorked: 31 outliers (3.51%)
+
+MÉTHODE DE PREPROCESSING:
+  1. Split stratifié (60% train, 20% val, 20% test)
+  2. Imputation des valeurs manquantes (mode/médiane)
+  3. Encodage ordinal + standardisation (features ordinales)
+  4. One-hot encoding (features nominales)
+  5. Standardisation (features numériques)
+  6. Pipeline fitted UNIQUEMENT sur train (évite data leakage)

@@ -6,6 +6,7 @@ This module performs leakage-free preprocessing:
     ✓ Missing value imputation (fitted on train only)
     ✓ Ordinal + One-hot encoding
     ✓ Numerical scaling (fitted on train only)
+    ✓ Outlier detection and reporting
     ✓ Saves preprocessing pipeline for reproducibility
 
 Author: Souhaib MADHOUR
@@ -20,6 +21,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 import joblib
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 # --------------------------------------------------
@@ -87,6 +90,89 @@ def get_feature_groups():
     ]
     
     return categorical_ordinal, categorical_nominal, numeric_features
+
+
+# --------------------------------------------------
+# OUTLIER DETECTION
+# --------------------------------------------------
+def detect_outliers(X_train: pd.DataFrame, numeric_features: list) -> dict:
+    """
+    Détecte les outliers avec la méthode IQR (Interquartile Range).
+    
+    Args:
+        X_train: Training features DataFrame
+        numeric_features: List of numeric column names
+    
+    Returns:
+        Dictionary with outlier counts per feature
+    """
+    outliers_summary = {}
+    
+    print("\n" + "="*60)
+    print("DÉTECTION DES VALEURS ABERRANTES (Méthode IQR)")
+    print("="*60)
+    
+    for col in numeric_features:
+        if col in X_train.columns:
+            Q1 = X_train[col].quantile(0.25)
+            Q3 = X_train[col].quantile(0.75)
+            IQR = Q3 - Q1
+            
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+            
+            outliers = ((X_train[col] < lower_bound) | (X_train[col] > upper_bound)).sum()
+            outliers_summary[col] = {
+                'count': outliers,
+                'percentage': (outliers / len(X_train)) * 100,
+                'lower_bound': lower_bound,
+                'upper_bound': upper_bound
+            }
+    
+    # Afficher les top 5 features avec le plus d'outliers
+    sorted_outliers = sorted(outliers_summary.items(), 
+                            key=lambda x: x[1]['count'], 
+                            reverse=True)
+    
+    print("\nTop 5 features avec le plus de valeurs aberrantes:")
+    for col, info in sorted_outliers[:5]:
+        print(f"  {col:25s}: {info['count']:3d} outliers ({info['percentage']:5.2f}%)")
+    
+    print(f"\nNote: Les outliers sont détectés mais CONSERVÉS dans le dataset.")
+    print(f"      (Suppression potentiellement dommageable pour la prédiction)")
+    
+    return outliers_summary
+
+
+# --------------------------------------------------
+# MISSING VALUES ANALYSIS
+# --------------------------------------------------
+def analyze_missing_values(df: pd.DataFrame) -> None:
+    """
+    Analyse et affiche les valeurs manquantes dans le dataset.
+    """
+    print("\n" + "="*60)
+    print("ANALYSE DES VALEURS MANQUANTES")
+    print("="*60)
+    
+    missing = df.isnull().sum()
+    missing_percent = (missing / len(df)) * 100
+    
+    missing_df = pd.DataFrame({
+        'Colonnes': missing.index,
+        'Valeurs_Manquantes': missing.values,
+        'Pourcentage': missing_percent.values
+    })
+    
+    missing_df = missing_df[missing_df['Valeurs_Manquantes'] > 0].sort_values(
+        'Valeurs_Manquantes', ascending=False
+    )
+    
+    if len(missing_df) > 0:
+        print("\nColonnes avec valeurs manquantes:")
+        print(missing_df.to_string(index=False))
+    else:
+        print("\n✓ Aucune valeur manquante détectée dans le dataset!")
 
 
 # --------------------------------------------------
@@ -175,6 +261,51 @@ def get_feature_names(preprocessor: ColumnTransformer) -> list:
 
 
 # --------------------------------------------------
+# SAVE PREPROCESSING SUMMARY
+# --------------------------------------------------
+def save_preprocessing_summary(df: pd.DataFrame, outliers_info: dict, save_dir: str = "../reports"):
+    """
+    Sauvegarde un résumé du preprocessing en format texte.
+    """
+    os.makedirs(save_dir, exist_ok=True)
+    summary_path = os.path.join(save_dir, "preprocessing_summary.txt")
+    
+    with open(summary_path, 'w', encoding='utf-8') as f:
+        f.write("="*60 + "\n")
+        f.write("RÉSUMÉ DU PREPROCESSING\n")
+        f.write("="*60 + "\n\n")
+        
+        f.write(f"Taille du dataset: {df.shape[0]} lignes, {df.shape[1]} colonnes\n\n")
+        
+        f.write("VALEURS MANQUANTES:\n")
+        missing = df.isnull().sum()
+        if missing.sum() == 0:
+            f.write("  ✓ Aucune valeur manquante\n\n")
+        else:
+            for col, count in missing[missing > 0].items():
+                f.write(f"  - {col}: {count} ({count/len(df)*100:.2f}%)\n")
+            f.write("\n")
+        
+        f.write("VALEURS ABERRANTES (TOP 5):\n")
+        sorted_outliers = sorted(outliers_info.items(), 
+                                key=lambda x: x[1]['count'], 
+                                reverse=True)
+        for col, info in sorted_outliers[:5]:
+            f.write(f"  - {col}: {info['count']} outliers ({info['percentage']:.2f}%)\n")
+        f.write("\n")
+        
+        f.write("MÉTHODE DE PREPROCESSING:\n")
+        f.write("  1. Split stratifié (60% train, 20% val, 20% test)\n")
+        f.write("  2. Imputation des valeurs manquantes (mode/médiane)\n")
+        f.write("  3. Encodage ordinal + standardisation (features ordinales)\n")
+        f.write("  4. One-hot encoding (features nominales)\n")
+        f.write("  5. Standardisation (features numériques)\n")
+        f.write("  6. Pipeline fitted UNIQUEMENT sur train (évite data leakage)\n")
+    
+    print(f"✓ Résumé du preprocessing sauvegardé: {summary_path}")
+
+
+# --------------------------------------------------
 # MAIN PREPROCESSING FUNCTION
 # --------------------------------------------------
 def preprocess_data(data_path: str, save_dir: str = "models") -> tuple:
@@ -201,17 +332,25 @@ def preprocess_data(data_path: str, save_dir: str = "models") -> tuple:
     df = load_dataset(data_path)
     print(f"✓ Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
     
+    # Analyze missing values
+    analyze_missing_values(df)
+    
     # Separate features and target
     y = encode_target(df["Attrition"])
     X = df.drop("Attrition", axis=1)
     
     # Check class distribution
-    print(f"\nClass distribution:")
-    print(f"  Attrition=1 (Left): {(y==1).sum()} ({(y==1).mean()*100:.1f}%)")
-    print(f"  Attrition=0 (Stayed): {(y==0).sum()} ({(y==0).mean()*100:.1f}%)")
+    print(f"\n" + "="*60)
+    print("DISTRIBUTION DES CLASSES")
+    print("="*60)
+    print(f"  Attrition=1 (Left):   {(y==1).sum():4d} ({(y==1).mean()*100:.1f}%)")
+    print(f"  Attrition=0 (Stayed): {(y==0).sum():4d} ({(y==0).mean()*100:.1f}%)")
+    print(f"  Ratio: 1:{(y==0).sum()/(y==1).sum():.2f} (Stayed:Left)")
     
     # Split: 60% train, 40% temp
-    print(f"\nSplitting data (60/20/20)...")
+    print(f"\n" + "="*60)
+    print("SPLIT DES DONNÉES (STRATIFIÉ)")
+    print("="*60)
     X_train, X_temp, y_train, y_temp = train_test_split(
         X, y, test_size=0.40, random_state=42, stratify=y
     )
@@ -221,16 +360,22 @@ def preprocess_data(data_path: str, save_dir: str = "models") -> tuple:
         X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
     
-    print(f"✓ Train: {X_train.shape[0]} samples")
-    print(f"✓ Val:   {X_val.shape[0]} samples")
-    print(f"✓ Test:  {X_test.shape[0]} samples")
+    print(f"✓ Train: {X_train.shape[0]} samples ({X_train.shape[0]/len(X)*100:.0f}%)")
+    print(f"✓ Val:   {X_val.shape[0]} samples ({X_val.shape[0]/len(X)*100:.0f}%)")
+    print(f"✓ Test:  {X_test.shape[0]} samples ({X_test.shape[0]/len(X)*100:.0f}%)")
+    
+    # Detect outliers (on training set only)
+    _, _, numeric_features = get_feature_groups()
+    outliers_info = detect_outliers(X_train, numeric_features)
     
     # Build preprocessing pipeline (fit on train only)
-    print(f"\nBuilding preprocessing pipeline...")
+    print(f"\n" + "="*60)
+    print("CONSTRUCTION DU PIPELINE DE PREPROCESSING")
+    print("="*60)
     preprocessor = build_preprocessing_pipeline(X_train)
     
     # Transform all splits
-    print(f"Transforming datasets...")
+    print(f"\nTransformation des datasets...")
     X_train_prep = preprocessor.transform(X_train)
     X_val_prep = preprocessor.transform(X_val)
     X_test_prep = preprocessor.transform(X_test)
@@ -254,6 +399,9 @@ def preprocess_data(data_path: str, save_dir: str = "models") -> tuple:
     joblib.dump(feature_names, feature_names_path)
     print(f"✓ Feature names saved to: {feature_names_path}")
     
+    # Save preprocessing summary
+    save_preprocessing_summary(df, outliers_info)
+    
     return X_train_prep, X_val_prep, X_test_prep, y_train, y_val, y_test, preprocessor, feature_names
 
 
@@ -262,7 +410,7 @@ def preprocess_data(data_path: str, save_dir: str = "models") -> tuple:
 # --------------------------------------------------
 if __name__ == "__main__":
     # Example usage
-    data_path = "data\employee_attrition.csv"
+    data_path = "../data/employee_attrition.csv"
     
     X_train, X_val, X_test, y_train, y_val, y_test, preprocessor, feature_names = preprocess_data(data_path)
     
