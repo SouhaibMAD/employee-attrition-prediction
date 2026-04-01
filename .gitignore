@@ -1,4 +1,18 @@
+# ================================================
+# FILES TO IGNORE - Internal Team Documentation
+# ================================================
+
+# Internal team files (not for GitHub)
 commandsgit.txt
+GUIDE_PRESENTATION.md
+workflow.md
+
+# Project summary & update files (internal reference)
+PROJECT_SUMMARY.md
+.github-ready-summary.md
+UPDATE_SUMMARY.md
+FINAL_README_UPDATE.md
+check-git-status.sh
 
 # Virtual Environment
 venv/
@@ -25,7 +39,7 @@ build/
 */.ipynb_checkpoints/*
 *.ipynb_checkpoints
 
-# Data Files (large datasets)
+# Data Files (large datasets - ignore by default)
 data/*.csv
 data/*.xlsx
 data/*.parquet
@@ -35,8 +49,9 @@ data/*.txt
 *.sqlite
 *.sqlite3
 
-# Keep small sample data
+# BUT keep small sample datasets for demonstration
 !data/sample_*.csv
+!data/sample_*.json
 
 # Trained Models & Serialized Files
 models/*.pkl
@@ -158,8 +173,27 @@ dmypy.json
 # Pyre
 .pyre/
 
-# Reports - keep structure but ignore large generated files
+# ================================================
+# REPORTS - Keep visualizations, ignore text reports
+# ================================================
+
+# Ignore generated text reports (can be regenerated)
+reports/*.txt
+reports/*.log
 reports/*.html
 reports/*.pdf
+
+# Keep JSON results for metrics demonstration
+!reports/*.json
+
+# Keep all images/plots for portfolio demonstration
+!reports/*.png
+!reports/*.jpg
+!reports/*.jpeg
+!reports/*.svg
+
+# Keep CSV comparisons
+!reports/*.csv
+
+# Ignore plots subdirectory if exists
 reports/plots/
-reports/*.log

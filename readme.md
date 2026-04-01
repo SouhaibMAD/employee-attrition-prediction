@@ -1,8 +1,13 @@
 # 🎯 Prédiction de l'Attrition des Employés
 
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![ML](https://img.shields.io/badge/ML-Classification-green.svg)
+![Status](https://img.shields.io/badge/Status-Complete-success.svg)
+![ROC-AUC](https://img.shields.io/badge/ROC--AUC-0.770-orange.svg)
+
 **Mini-projet Machine Learning - 4ème année Informatique et Réseaux**
 
-Projet de classification binaire pour prédire l'attrition (départ) des employés au sein d'une entreprise en utilisant des techniques d'apprentissage automatique supervisé.
+Projet de classification binaire pour prédire l'attrition (départ) des employés au sein d'une entreprise en utilisant des techniques d'apprentissage automatique supervisé. Ce projet implémente un pipeline ML complet, de l'analyse exploratoire au déploiement d'une application interactive.
 
 ---
 
@@ -20,12 +25,14 @@ Projet de classification binaire pour prédire l'attrition (départ) des employ�
 
 ## 📖 Description
 
-Ce projet implémente un pipeline complet de Machine Learning pour prédire l'attrition des employés :
+Ce projet implémente un **pipeline complet de Machine Learning** pour prédire l'attrition des employés :
 
 - **Objectif** : Prédire si un employé va quitter l'entreprise (Attrition = Yes/No)
-- **Type de problème** : Classification binaire
-- **Dataset** : HR Analytics Employee Attrition Dataset
+- **Type de problème** : Classification binaire supervisée
+- **Dataset** : IBM HR Analytics Employee Attrition (1470 employés, 35 features)
 - **Algorithmes testés** : Logistic Regression, Random Forest, XGBoost
+- **Meilleur modèle** : 🏆 Random Forest (ROC-AUC: 0.770 sur test set)
+- **Déploiement** : Application Streamlit interactive pour prédictions en temps réel
 
 ### 🎓 Concepts ML couverts
 
@@ -121,7 +128,23 @@ pip install -r requirements.txt
 
 ## 💻 Utilisation
 
-### Étape 1 : Analyse exploratoire (EDA)
+### Option 1 : Application Interactive Streamlit (Recommandé) 🚀
+
+Lancez l'interface web pour faire des prédictions en temps réel :
+
+```bash
+streamlit run app.py
+```
+
+L'application permet de :
+- ✅ Saisir les informations d'un employé via un formulaire intuitif
+- ✅ Obtenir une prédiction instantanée (Risque faible/élevé de départ)
+- ✅ Visualiser les probabilités et feature importance
+- ✅ Recevoir des recommandations RH personnalisées
+
+### Option 2 : Workflow complet (Entraînement + Évaluation)
+
+#### Étape 1 : Analyse exploratoire (EDA)
 
 ```bash
 cd src
@@ -220,26 +243,65 @@ Transformation de train/val/test
 
 | Modèle | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
 |--------|----------|-----------|--------|----------|---------|
-| Logistic Regression | 0.XXX | 0.XXX | 0.XXX | 0.XXX | 0.XXX |
-| Random Forest | 0.XXX | 0.XXX | 0.XXX | 0.XXX | 0.XXX |
-| XGBoost | 0.XXX | 0.XXX | 0.XXX | 0.XXX | 0.XXX |
+| Random Forest (Tuned) | **0.837** | **0.500** | **0.479** | **0.489** | **0.802** |
+| XGBoost (Tuned) | 0.854 | 0.619 | 0.271 | 0.377 | 0.788 |
 
-*(Les valeurs seront générées après exécution)*
+*Note: Logistic Regression baseline a également été testé*
 
 ### Meilleur modèle
 
-**Modèle sélectionné :** [Sera déterminé après exécution]
+**Modèle sélectionné :** 🏆 **Random Forest (Hyperparameter Tuned)**
+
+**Hyperparamètres optimaux :**
+- `n_estimators`: 150
+- `max_depth`: 10
+- `min_samples_split`: 5
+- `min_samples_leaf`: 8
+- `class_weight`: 'balanced'
 
 **Performance sur Test Set :**
-- ROC-AUC : X.XXX
-- Accuracy : X.XXX
-- F1-Score : X.XXX
+- **ROC-AUC** : **0.770** ⭐ (Acceptable - seuil > 0.70)
+- **Accuracy** : 0.827
+- **F1-Score** : 0.495
+- **Precision** : 0.463
+- **Recall** : 0.532
 
-### Top Features importantes
+**Date d'évaluation :** 2025-12-08
 
-1. Feature 1 (importance: X.XXX)
-2. Feature 2 (importance: X.XXX)
-3. Feature 3 (importance: X.XXX)
+### 📈 Visualisations des Résultats
+
+<details>
+<summary>📊 Cliquez pour voir les graphiques (11 visualisations)</summary>
+
+#### Matrice de Confusion (Test Set)
+![Confusion Matrix](reports/confusion_matrix_test_final.png)
+
+#### Courbe ROC (Test Set)
+![ROC Curve](reports/roc_curve_test_final.png)
+
+#### Feature Importance (Random Forest)
+![Feature Importance](reports/feature_importance_random_forest.png)
+
+#### Comparaison des Métriques
+![Metrics Comparison](reports/metrics_comparison.png)
+
+#### Analyse Exploratoire
+- Distribution de la cible : [target_distribution.png](reports/target_distribution.png)
+- Corrélations : [correlations_with_attrition.png](reports/correlations_with_attrition.png)
+- Heatmap : [correlation_heatmap.png](reports/correlation_heatmap.png)
+
+</details>
+
+
+### Top 5 Features Importantes
+
+D'après le modèle Random Forest, les facteurs les plus prédictifs de l'attrition sont :
+
+1. 💰 **MonthlyIncome** (importance: ~0.078) - Salaire mensuel
+2. 👤 **Age** (importance: ~0.074) - Âge de l'employé
+3. ⏰ **OverTime** (importance: ~0.057) - Heures supplémentaires
+4. 📈 **TotalWorkingYears** (importance: ~0.056) - Années d'expérience totales
+5. 📊 **StockOptionLevel** (importance: ~0.054) - Niveau d'options d'actions
 
 ---
 
@@ -247,53 +309,98 @@ Transformation de train/val/test
 
 ### Facteurs d'attrition identifiés
 
-Les features les plus importantes révèlent que l'attrition est principalement liée à :
+L'analyse révèle que l'attrition est principalement influencée par :
 
-1. **OverTime** : Les heures supplémentaires augmentent le risque de départ
-2. **MonthlyIncome** : Les salaires bas sont corrélés à l'attrition
-3. **YearsAtCompany** : Les nouveaux employés sont plus susceptibles de partir
-4. **WorkLifeBalance** : Un mauvais équilibre augmente le turnover
+1. 💰 **Salaire (MonthlyIncome)** : Les employés avec des salaires plus bas ont un risque d'attrition plus élevé
+2. 👤 **Âge** : Les employés plus jeunes ont tendance à changer d'emploi plus fréquemment
+3. ⏰ **Heures supplémentaires** : Le travail excessif augmente significativement le risque de départ
+4. 📈 **Expérience professionnelle** : Les employés en début ou fin de carrière sont plus à risque
+5. 📊 **Avantages (Stock Options)** : Les options d'actions améliorent la rétention
 
 ### Recommandations RH
 
-✅ **Actions préventives :**
-- Limiter les heures supplémentaires
-- Revoir les grilles salariales
-- Programme d'intégration renforcé (0-2 ans)
-- Améliorer la flexibilité et l'équilibre vie pro/perso
+✅ **Actions préventives basées sur les données :**
+- 💵 **Revoir les grilles salariales** - Le salaire est le facteur #1
+- ⏱️ **Limiter les heures supplémentaires** - Mettre en place des politiques strictes
+- 🎁 **Renforcer les avantages** - Augmenter les stock options pour les employés clés
+- 👥 **Cibler les jeunes employés** - Programme de mentorat et de développement
+- 📅 **Suivi personnalisé** - Identifier et accompagner les profils à risque
 
 ---
 
-## ⚠️ Limitations
+## ⚠️ Limitations & Observations
 
-1. **Dataset limité** : Risque d'overfitting avec peu de données
-2. **Données cross-sectionnelles** : Pas de validation temporelle
-3. **Features potentiellement leaky** : MonthlyIncome pourrait être un proxy de la décision
-4. **Classe minoritaire** : Difficulté à bien prédire les départs (16%)
+1. **Overfitting détecté** : Écart Train-Test ROC-AUC de 0.213 (Train: 0.983, Test: 0.770)
+   - Le modèle performe mieux sur les données d'entraînement
+   - Malgré cela, performance test reste acceptable (ROC-AUC > 0.70)
+   
+2. **Dataset limité** : 1470 lignes avec seulement 237 cas d'attrition (16%)
+   - Classe minoritaire difficile à prédire avec précision
+   - `class_weight='balanced'` appliqué pour compenser
+   
+3. **Données cross-sectionnelles** : Pas de dimension temporelle
+   - Impossible de valider sur des données futures
+   - Recommandé de ré-entraîner régulièrement le modèle
+   
+4. **Précision modérée** : Precision de 46% sur le test set
+   - Sur 100 prédictions "va partir", ~46 sont correctes
+   - Acceptable pour un outil de screening, pas pour décisions automatiques
 
 ---
 
 ## 🔮 Améliorations futures
 
-- [ ] Tester d'autres algorithmes (LightGBM, CatBoost)
-- [ ] Feature engineering avancé (interactions, polynômes)
-- [ ] Analyse SHAP pour l'explicabilité
-- [ ] Optimisation du seuil de classification
-- [ ] Validation croisée stratifiée plus robuste
-- [ ] Ensemble methods (voting, stacking)
+### Pour réduire l'overfitting :
+- [ ] Augmenter la régularisation (max_depth plus faible, min_samples_leaf plus élevé)
+- [ ] Feature selection pour réduire le bruit
+- [ ] Ensemble methods (voting, stacking) pour stabiliser les prédictions
+- [ ] Collecte de plus de données d'entraînement
+
+### Pour améliorer l'explicabilité :
+- [ ] Implémentation SHAP values (package déjà dans requirements.txt)
+- [ ] Analyse de dépendance partielle (PDP plots)
+- [ ] Règles de décision interprétables
+
+### Pour optimiser les performances :
+- [ ] Tester LightGBM et CatBoost (packages déjà installés)
+- [ ] Optimisation du seuil de classification (actuellement 0.5)
+- [ ] Feature engineering : interactions (ex: Age × MonthlyIncome)
+- [ ] Validation temporelle si données historiques disponibles
 
 ---
 
 ## 👨‍💻 Auteur
 
 **Souhaib MADHOUR**
-- Module : Machine Learning
-- Niveau : 4ème année Informatique et Réseaux
-- Cycle d'ingénieur
+- 📚 Module : Machine Learning
+- 🎓 Niveau : 4ème année Informatique et Réseaux
+- 🎯 Cycle d'ingénieur
+
+---
+
+## 📊 Quick Stats
+
+```
+📦 Dataset Size        : 1470 employés
+🎯 Target Imbalance    : 16.1% attrition (237/1470)
+🤖 Best Model          : Random Forest (n=150, depth=10)
+📈 Test ROC-AUC        : 0.770
+🎨 Visualizations      : 11 graphiques générés
+🚀 Deployment          : Streamlit app ready
+⏱️ Training Time       : ~2-3 minutes
+💾 Model Size          : <5 MB
+```
 
 ---
 
 ## 📝 Notes techniques
+
+### Dataset
+
+- **Source** : [IBM HR Analytics Employee Attrition Dataset](https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset)
+- **Taille** : 1470 employés × 35 features
+- **Cible** : Attrition binaire (237 départs / 1233 restés = ratio 5.20:1)
+- **Qualité** : ✓ Aucune valeur manquante
 
 ### Éviter le data leakage
 
